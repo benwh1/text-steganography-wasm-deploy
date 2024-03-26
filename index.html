@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>text-steganography-wasm</title>
+</head>
+
+<script type="module">
+    import init, * as wasm_module from "./init.js";
+    (async () => {
+        await init("./module_bg.wasm");
+        window.wasm = wasm_module;
+    })();
+</script>
+
+<script>
+    function filler() {
+        const filler = document.getElementById("filler").value;
+        if (filler === "") {
+            return "\u200B";
+        }
+        return filler;
+    }
+
+    function encode() {
+        const message = document.getElementById("message").value;
+        const secret = document.getElementById("secret").value;
+        const encoded = wasm.encode(message, secret, filler());
+        if (encoded === null) {
+            alert("error");
+        } else {
+            document.getElementById("encoded").value = encoded;
+        }
+    }
+
+    function decode() {
+        const encoded = document.getElementById("encoded").value;
+        const secret = wasm.decode(encoded, filler());
+        if (secret === null) {
+            alert("error");
+        } else {
+            document.getElementById("secret").value = secret;
+        }
+    }
+</script>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+    }
+
+    div {
+        margin-bottom: 10px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    textarea {
+        width: 100%;
+        height: 60px;
+        padding: 5px;
+        box-sizing: border-box;
+    }
+
+    button {
+        padding: 5px 10px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #0056b3;
+    }
+</style>
+
+<body>
+    <div>
+        <label for="message">Message:</label>
+        <textarea id="message" name="message"></textarea>
+    </div>
+    <div>
+        <label for="secret">Secret:</label>
+        <textarea id="secret" name="secret"></textarea>
+    </div>
+    <div>
+        <label for="filler">Filler character (empty = zero width space):</label>
+        <input id="filler" name="filler" type="text" value="" />
+    </div>
+    <div>
+        <label for="encoded">Encoded Message:</label>
+        <textarea id="encoded" name="encoded"></textarea>
+    </div>
+    <div>
+        <button onclick="encode()">Encode</button>
+    </div>
+    <div>
+        <button onclick="decode()">Decode</button>
+    </div>
+</body>
+
+</html>
